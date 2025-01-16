@@ -1,32 +1,28 @@
 import mongoose from 'mongoose';
 
-
 const Schema = mongoose.Schema;
 
-const UserSchema = new Schema(
+const CategorySchema = new Schema(
     {
         title: {
             type: String,
-            required: false,
-            unique: true, 
-        },
-        description: {
-            type: String,
-            required: true,
+            required: [true, "Title is required"],
+            unique: true,
         },
         image: {
             type: String,
-            required: true,
+            required: [true, "Image is required"],
         },
-        Product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-        },
+        products: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Product", // Reference to Product model
+            },
+        ],
     },
     {
-        timestamps: true,
+        timestamps: true, // Automatically adds createdAt and updatedAt
     }
 );
 
-
-export default mongoose.model('Category', UserSchema);
+export default mongoose.model('Category', CategorySchema);
