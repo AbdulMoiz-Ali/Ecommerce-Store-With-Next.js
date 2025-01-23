@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 // Specifications, Care & Maintenance
-const SpecificationSchema = new Schema({
+const descriptionSchema = new Schema({
     heading: {
         type: String,
         required: true
@@ -65,7 +65,7 @@ const ProductSchema = new Schema(
         },
         image: {
             type: String,
-            required: [true, "Product image is required"]
+            // required: [true, "Product image is required"]
         },
         // description: {
         //     type: String,
@@ -93,7 +93,7 @@ const ProductSchema = new Schema(
             default: false
         },
         // Dynamic specifications
-        description: [SpecificationSchema],
+        description: [descriptionSchema],
         // Key-value pairs for additional details
         additionalInfo: {
             type: Map,
@@ -108,8 +108,7 @@ const ProductSchema = new Schema(
         variations: [VariationSchema],
         category: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
-            required: true,
+            ref: "Category"
         },
         reviews: [ReviewSchema], // User reviews and ratings
         // user: {
@@ -124,4 +123,6 @@ const ProductSchema = new Schema(
     }
 );
 
-export default mongoose.model("Product", ProductSchema);
+const Product = mongoose.models.Product || mongoose.model("Product", ProductSchema);
+
+export default Product;

@@ -1,68 +1,71 @@
-// import Product from "../../../models/Product.js";
-// import dbConnect from "../../../utils/db.js";
-
-// export default async function handler(req, res) {
-//     await dbConnect();
-
-//     const { method } = req;
-
-//     switch (method) {
-//         case "POST":
-//             try {
-//                 const product = await Product.create(req.body);
-//                 res.status(201).json({ success: true, data: product });
-//             } catch (error) {
-//                 res.status(400).json({ success: false, message: error.message });
-//             }
-//             break;
-
-//         case "PUT":
-//             try {
-//                 const { id } = req.query; // Product ID from query params
-//                 const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
-//                     new: true,
-//                 });
-
-//                 if (!updatedProduct) {
-//                     return res.status(404).json({ success: false, message: "Product not found" });
-//                 }
-
-//                 res.status(200).json({ success: true, data: updatedProduct });
-//             } catch (error) {
-//                 res.status(400).json({ success: false, message: error.message });
-//             }
-//             break;
-
-//         default:
-//             res.status(405).json({ success: false, message: "Method not allowed" });
-//             break;
-//     }
-// }
-
+import Product from "../../../models/Product.js";
+import connectDB from "../../../utils/db.js";
+import cloudinary from "../../../middleware/cloudinary.js"
+import nextConnect from "next-connect";
+import { upload } from "../../../middleware/multer.js";
 
 const autoAssignAdsAndTopPicks = async () => {
+    // Reset all products' featured and topPick to false
+    await Product.updateMany({}, { $set: { featured: false, topPick: false } });
+
+    // Find top 5 products for featured based on discount
     const featuredProducts = await Product.find({ isEnabled: true, discount: { $gt: 0 } })
         .sort({ discount: -1 })
-        .limit(5); // Top 5 for featured
+        .limit(5);
 
+    // Update only top 5 products as featured
     await Product.updateMany(
         { _id: { $in: featuredProducts.map((p) => p._id) } },
         { $set: { featured: true } }
     );
 
+    // Find top 3 products for topPick based on discount
     const topPickProducts = await Product.find({ isEnabled: true, discount: { $gt: 0 } })
         .sort({ discount: -1 })
-        .limit(3); // Top 3 for toppick
+        .limit(3);
 
+    // Update only top 3 products as topPick
     await Product.updateMany(
         { _id: { $in: topPickProducts.map((p) => p._id) } },
         { $set: { topPick: true } }
     );
 };
 
+// Function to upload image to Cloudinary and return the URL
+const uploadImageToCloudinary = async (localPath) => {
+    try {
+        // Upload the image to Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(localPath, {
+            resource_type: "image", // Ensure we upload only images
+        });
 
+        // Uncomment to delete the local file after upload
+        // fs.unlinkSync(localPath);
 
-const createProduct = async (req, res) => {
+        return uploadResult.url;  // Return the URL of the uploaded image
+    } catch (error) {
+        console.error("Cloudinary Upload Error:", error);
+        // Uncomment to delete the local file on error
+        // fs.unlinkSync(localPath);
+        return null;
+    }
+};
+
+// Next-Connect Handler
+const createProduct = nextConnect({
+    onError: (err, req, res) => {
+        res.status(500).json({ success: false, message: `Error: ${err.message}` });
+    },
+    onNoMatch: (req, res) => {
+        res.status(405).json({ success: false, message: `Method '${req.method}' not allowed.` });
+    },
+});
+
+// Attach Multer Middleware
+createProduct.use(upload.single("image"));
+
+createProduct.post(async (req, res) => {
+    await connectDB();
     try {
         // Step 1: Get product data from request body
         const {
@@ -73,10 +76,24 @@ const createProduct = async (req, res) => {
             delivery,
             offerEndTime,
             featured,
+            description,
+            variations,
+            reviews,
+            additionalInfo,
             topPick,
+            category,
             selectionMode, // Manual or Auto
         } = req.body;
 
+        if (!req.file) {
+            return res.status(400).json({ error: "Blog should have an image" });
+        }
+
+        const imageUrl = await uploadImageToCloudinary(req.file.path);
+
+        if (!imageUrl) {
+            return res.status(500).json({ message: 'Error uploading image to Cloudinary' });
+        }
         // Step 2: Check Selection Mode
         if (selectionMode === "auto") {
             // Auto Mode: Automatically set featured and topPick
@@ -86,6 +103,7 @@ const createProduct = async (req, res) => {
             // Step 3: Create Product with default featured/topPick
             const newProduct = await Product.create({
                 name,
+                imageUrl,
                 price,
                 discount,
                 stock,
@@ -94,6 +112,11 @@ const createProduct = async (req, res) => {
                 featured: isFeatured, // Auto logic will override this
                 topPick: isTopPick,   // Auto logic will override this
                 selectionMode,
+                description,
+                variations,
+                reviews,
+                additionalInfo,
+                category
             });
 
             // Trigger auto calculation after product is created
@@ -108,6 +131,7 @@ const createProduct = async (req, res) => {
             // Manual Mode: Use admin input directly
             const newProduct = await Product.create({
                 name,
+                imageUrl,
                 price,
                 discount,
                 stock,
@@ -116,13 +140,19 @@ const createProduct = async (req, res) => {
                 featured, // Admin decides this in manual mode
                 topPick,  // Admin decides this in manual mode
                 selectionMode,
+                description,
+                variations,
+                reviews,
+                additionalInfo,
+                category
             });
-
+            console.log(newProduct)
             return res.status(201).json({
                 success: true,
                 message: "Product created successfully in manual mode.",
                 product: newProduct,
             });
+
         } else {
             // Invalid selectionMode
             throw new Error("Invalid selection mode");
@@ -133,4 +163,8 @@ const createProduct = async (req, res) => {
             message: error.message,
         });
     }
-};
+});
+
+
+
+export default createProduct;

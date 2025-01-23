@@ -2,15 +2,15 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const CategorySchema = new Schema(
+const OrderSchema = new Schema(
     {
         title: {
             type: String,
             required: [true, "Title is required"],
         },
-        image: {
-            type: String,
-            required: [true, "Image is required"],
+        User: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User", // Reference to Product model
         },
         products: [
             {
@@ -23,6 +23,6 @@ const CategorySchema = new Schema(
         timestamps: true, // Automatically adds createdAt and updatedAt
     }
 );
-const Category = mongoose.models.Category || mongoose.model('Category', CategorySchema);
+const Order = mongoose.model('Order', OrderSchema);
 
-export default Category;
+export default Order;
