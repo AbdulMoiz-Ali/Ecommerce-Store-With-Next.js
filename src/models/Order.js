@@ -18,6 +18,14 @@ const OrderSchema = new Schema(
                 ref: "Product", // Reference to Product model
             },
         ],
+        Payment: {
+            type: String,
+            required: [true, "Payment Method is required"],
+        },
+        Shipping: {
+            type: String,
+            required: [true, "Shipping Method is required"],
+        }
     },
     {
         timestamps: true, // Automatically adds createdAt and updatedAt
