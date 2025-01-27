@@ -24,6 +24,12 @@ const UserSchema = new Schema(
         Country: {
             type: String,
         },
+        order:[
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Order",
+            },
+        ],
     },
     {
         timestamps: true,
