@@ -39,4 +39,6 @@ const UserSchema = new Schema(
 // Use save ho na sa phala hash passward ho ga phir user save ho ga 
 UserSchema.pre('save', hashPassword);
 
-export default mongoose.model('User', UserSchema);
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
+
+export default User

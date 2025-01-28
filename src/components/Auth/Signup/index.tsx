@@ -63,9 +63,7 @@ const Signup = () => {
         setConfirmPassword("");
 
         // Navigate to the main page after a short delay
-        setTimeout(() => {
-          router.push("/");
-        }, 10);
+        router.push("/");
       } else {
         const err = await response.json();
         setError(err.message || "Failed to sign up");

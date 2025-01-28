@@ -9,6 +9,11 @@ const RedirectIfAuthenticated = ({ children }) => {
     const router = useRouter();
 
     useEffect(() => {
+        if (data.user.role == "admin") {
+            router.push("/admin");
+          } else {
+            router.push("/");
+          }
         if (isAuthenticated) {
             router.push("/"); // Redirect authenticated users to the dashboard
         }

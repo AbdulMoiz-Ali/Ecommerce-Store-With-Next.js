@@ -35,6 +35,7 @@ const Signin = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data)
         dispatch(
           login({
             user: data.user,
@@ -44,15 +45,15 @@ const Signin = () => {
         setSuccess("Login successful!");
         setError(""); // Clear error messages
         setLoading(false); // Stop loading
-
-        if (data.email == "admin@gmail.com") {
+        console.log(data.user.role)
+        if (data.user.role == "admin") {
           router.push("/admin");
+        } else {
+          router.push("/");
         }
 
         // Redirect to the dashboard after a short delay
-        setTimeout(() => {
-          router.push("/");
-        }, 10);
+
       } else {
         const err = await response.json();
         setError(err.message || "Failed to login");
