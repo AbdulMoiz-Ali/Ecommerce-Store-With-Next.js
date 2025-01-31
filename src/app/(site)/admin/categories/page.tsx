@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store"
 import { fetchCategories } from "@/redux/features/categorySlice";
 
 const AdminCategories = () => {
     const dispatch = useDispatch();
-    const { categories, loading, error } = useSelector((state) => state.category);
+    const { categories, loading, error } = useSelector((state: RootState) => state.category);
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [title, setTitle] = useState("");
     const [image, setImage] = useState(null);
@@ -23,7 +24,7 @@ const AdminCategories = () => {
     useEffect(() => {
         dispatch(fetchCategories());
         console.log("Redux Categories:", categories); // ✅ Check Redux state
-    }, [dispatch, categories]);
+    }, [dispatch]);
 
 
 
