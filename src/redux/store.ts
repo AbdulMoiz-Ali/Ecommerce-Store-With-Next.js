@@ -5,6 +5,7 @@ import cartReducer from "./features/cart-slice";
 import wishlistReducer from "./features/wishlist-slice";
 import productDetailsReducer from "./features/product-details";
 import authReducer from "./features/authSlice";
+import categoryReducer from "@/redux/features/categorySlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Use localStorage
 import { TypedUseSelectorHook, useSelector } from "react-redux";
@@ -23,6 +24,7 @@ export const store = configureStore({
     wishlistReducer,
     productDetailsReducer,
     auth: persistedReducer,
+    category: categoryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
