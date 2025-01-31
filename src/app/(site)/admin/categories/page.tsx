@@ -22,7 +22,9 @@ const AdminCategories = () => {
 
     useEffect(() => {
         dispatch(fetchCategories());
-    }, [dispatch]);
+        console.log("Redux Categories:", categories); // ✅ Check Redux state
+    }, [dispatch, categories]);
+
 
 
     const handleAddCategory = async (e) => {
@@ -177,7 +179,7 @@ const AdminCategories = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCategories.length === 0 ? (
+                            {categories.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={3}
@@ -187,7 +189,7 @@ const AdminCategories = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredCategories.map((category) => (
+                                categories.map((category) => (
                                     <tr key={category._id} className="hover:bg-gray-100">
                                         <td className="border-b border-gray-300 p-4 text-gray-700">
                                             <img
