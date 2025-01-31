@@ -4,6 +4,9 @@ import "../css/euclid-circular-a-font.css";
 import "../css/style.css";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AdminHeader from "./../../components/Admin/Header/index.jsx"
+
+import { usePathname } from "next/navigation";
 
 import { ModalProvider } from "../context/QuickViewModalContext";
 import { CartModalProvider } from "../context/CartSidebarModalContext";
@@ -23,6 +26,9 @@ export default function RootLayout({
 }) {
   const [loading, setLoading] = useState<boolean>(true);
 
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
+
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
   }, []);
@@ -38,7 +44,8 @@ export default function RootLayout({
               <CartModalProvider>
                 <ModalProvider>
                   <PreviewSliderProvider>
-                    <Header />
+                    {isAdminRoute ? <AdminHeader /> : <Header />}
+                    {/* <Header /> */}
                     {children}
 
                     <QuickViewModal />
@@ -49,7 +56,8 @@ export default function RootLayout({
               </CartModalProvider>
             </ReduxProvider>
             <ScrollToTop />
-            <Footer />
+            {/* <Footer /> */}
+            {isAdminRoute ? "moiz" : <Footer />}
           </>
         )}
       </body>

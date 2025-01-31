@@ -8,8 +8,8 @@ import { useAppSelector } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
-import Image from "next/image";
-import logo from "./../../../public/images/logo/aI.png"
+  import Image from "next/image";
+  import logo from "./../../../public/images/logo/aI.png"
 import { logout } from "@/redux/features/authSlice";
 
 const Header = () => {
