@@ -148,7 +148,7 @@ const AdminCategories = () => {
         setSearchQuery(query);
 
         const filtered = categories.filter((category) =>
-            category.title.toLowerCase().includes(query)
+            categories.title.toLowerCase().includes(query)
         );
 
         setFilteredCategories(filtered);
