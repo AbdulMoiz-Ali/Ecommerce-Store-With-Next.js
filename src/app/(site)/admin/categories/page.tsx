@@ -7,8 +7,7 @@ import { RootState } from "@/redux/store"
 import { fetchCategories } from "@/redux/features/categorySlice";
 
 const AdminCategories = () => {
-    const dispatch = useDispatch();
-    const { categories, loading, error } = useSelector((state: RootState) => state.category);
+    const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [title, setTitle] = useState("");
     const [image, setImage] = useState(null);
@@ -21,10 +20,20 @@ const AdminCategories = () => {
 
 
 
-    useEffect(async () => {
-        await dispatch(fetchCategories());
-        console.log("Redux Categories:", categories); // ✅ Check Redux state
-    }, [dispatch]);
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get("/api/category/getall");
+                setCategories(response.data); // API response set karna
+            } catch (err) {
+                console.log("Failed to fetch categories");
+            } finally {
+                console.log(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
 
 
