@@ -24,7 +24,7 @@ const AdminCategories = () => {
         const fetchCategories = async () => {
             try {
                 const response = await axios.get("/api/category/getall");
-                setCategories(response.data); // API response set karna
+                setCategories(response.data.products); // API response set karna
             } catch (err) {
                 console.log("Failed to fetch categories");
             } finally {
