@@ -148,11 +148,12 @@ const AdminCategories = () => {
         setSearchQuery(query);
 
         const filtered = categories.filter((category) =>
-            categories.title.toLowerCase().includes(query)
+            category.title?.toLowerCase().includes(query)
         );
 
         setFilteredCategories(filtered);
     };
+
 
     const toggleModal = () => {
         setIsOpen(!isOpen);
@@ -199,7 +200,7 @@ const AdminCategories = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                categories.map((category) => (
+                                filteredCategories.map((category) => (
                                     <tr key={category._id} className="hover:bg-gray-100">
                                         <td className="border-b border-gray-300 p-4 text-gray-700">
                                             <img
