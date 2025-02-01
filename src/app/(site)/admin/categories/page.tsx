@@ -21,8 +21,8 @@ const AdminCategories = () => {
 
 
 
-    useEffect(() => {
-        dispatch(fetchCategories());
+    useEffect(async () => {
+        await dispatch(fetchCategories());
         console.log("Redux Categories:", categories); // ✅ Check Redux state
     }, [dispatch]);
 
