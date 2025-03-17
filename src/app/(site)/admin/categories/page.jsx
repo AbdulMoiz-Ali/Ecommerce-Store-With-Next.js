@@ -5,12 +5,16 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store"
 import { fetchCategories } from "@/redux/features/categorySlice";
+import { GiTireIronCross } from "react-icons/gi";
+import { FormProvider, useForm } from "react-hook-form";
+import TextInputs from "./../../../../components/GlobalInputs/TextInputs"
 
 const AdminCategories = () => {
     const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [title, setTitle] = useState("");
     const [image, setImage] = useState(null);
+    const methods = useForm();
     const [searchQuery, setSearchQuery] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -18,6 +22,12 @@ const AdminCategories = () => {
     const [updatedTitle, setUpdatedTitle] = useState("");
     const [updatedImage, setUpdatedImage] = useState(null);
 
+
+    const { handleSubmit, control } = useForm();
+
+    const onSubmit = (data) => {
+        console.log("Form data ===>", data);
+    };
 
 
     useEffect(() => {
@@ -194,7 +204,7 @@ const AdminCategories = () => {
                                 <tr>
                                     <td
                                         colSpan={3}
-                                        className="text-center p-6 text-gray-500 border-b border-gray-300"
+                                        className="text-center w-full p-6 text-gray-500 border-b border-gray-300"
                                     >
                                         No results.
                                     </td>
@@ -245,45 +255,55 @@ const AdminCategories = () => {
                         className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-lg font-semibold text-gray-900">Add New Category</h3>
-                        <form className="mt-4" onSubmit={handleAddCategory}>
-                            <div className="mb-4">
-                                <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
-                                    Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full p-2 border border-gray-300 rounded-lg"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="file" className="block mb-2 text-sm font-medium text-gray-900">
-                                    Image
-                                </label>
-                                <input
-                                    type="file"
-                                    id="file"
-                                    onChange={(e) => {
-                                        if (e.target.files.length > 0) {
-                                            console.log("Selected File:", e.target.files[0]); // Debugging
-                                            setImage(e.target.files[0]);
-                                        }
-                                    }}
-                                    className="w-full p-2 border border-gray-300 rounded-lg"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
+                        <div className="w-full flex px-2 justify-between items-center">
+                            <h3 className="text-lg font-semibold text-gray-900">Add New Category</h3>
+                            <GiTireIronCross className="pointer-cursore" onClick={toggleModal} />
+                        </div>
+                        <FormProvider {...methods}>
+                            <form
+                                className="flex flex-col w-[100%] bg-[#fafafa]"
+                                onSubmit={methods.handleSubmit(onSubmit)}
                             >
-                                Add Category
-                            </button>
-                        </form>
+                                {/* <form className="mt-4" onSubmit={handleAddCategory}> */}
+                                {/* <div className="mb-4">
+                                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
+                                        Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="file" className="block mb-2 text-sm font-medium text-gray-900">
+                                        Image
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="file"
+                                        onChange={(e) => {
+                                            if (e.target.files.length > 0) {
+                                                console.log("Selected File:", e.target.files[0]); // Debugging
+                                                setImage(e.target.files[0]);
+                                            }
+                                        }}
+                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                        required
+                                    />
+                                </div> */}
+                                <TextInputs name={"name"} label={"Name"} className="w-full p-2 border border-gray-300 rounded-lg" />
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                    Add Category
+                                </button>
+                            </form>
+                        </FormProvider>
                     </div>
                 </div>
             )}

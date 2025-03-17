@@ -35,7 +35,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "src/app/(site)/admin/categories/page.jsx"  ],
+, "src/app/(site)/admin/categories/page.jsx", "src/app/(site)/admin/product/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]
