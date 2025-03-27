@@ -10,6 +10,7 @@ import validReducer from "@/redux/features/validSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Use localStorage
 import { TypedUseSelectorHook, useSelector } from "react-redux";
+import { categoryApi } from "./features/apiSlice";
 
 // Persist configuration
 const persistConfig = {
@@ -27,11 +28,15 @@ export const store = configureStore({
     auth: persistedReducer,
     category: categoryReducer,
     valid: validReducer,
+    [categoryApi.reducerPath]: categoryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // Required for redux-persist
-    }),
+      serializableCheck: {
+        ignoredActions: ["persist/PERSIST"], // Redux Persist ke liye
+      },
+    }).concat(categoryApi.middleware),
+
 });
 
 export type RootState = ReturnType<typeof store.getState>;

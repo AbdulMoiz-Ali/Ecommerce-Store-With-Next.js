@@ -1,30 +1,23 @@
 import connectDB from "../../../utils/db.js";
 import Category from "../../../models/Category.js";
 
-const getCatagories = async (req, res) => {
+const getCategories = async (req, res) => {
     await connectDB();
-    if (req.method === "GET") {
-        try {
-            // Execute the query and retrieve all products
-            const allProducts = await Category.find({});
+    try {
+        const allCategories = await Category.find({});
+        console.log(allCategories)
+        return res.status(200).json({
+            success: true,
+            message: "Categories retrieved successfully.",
+            categories: allCategories, // ✅ Fix: Change `products` to `categories`
+        });
 
-            return res.status(200).json({
-                success: true,
-                message: "Products retrieved successfully.",
-                products: allProducts, // Properly return the product list
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message,
-            });
-        }
-    } else {
-        res.status(405).json({
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            message: "Method not allowed.",
+            message: error.message,
         });
     }
 };
 
-export default getCatagories;
+export default getCategories;   
