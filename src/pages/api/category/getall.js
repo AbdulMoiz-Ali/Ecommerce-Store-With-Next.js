@@ -5,7 +5,7 @@ const getCategories = async (req, res) => {
     await connectDB();
     try {
         const allCategories = await Category.find({});
-        console.log(allCategories)
+        // console.log(allCategories)
         return res.status(200).json({
             success: true,
             message: "Categories retrieved successfully.",
