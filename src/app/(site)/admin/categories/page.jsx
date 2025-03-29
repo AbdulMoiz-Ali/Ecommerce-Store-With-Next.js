@@ -9,15 +9,23 @@ import { GiTireIronCross } from "react-icons/gi";
 import { FormProvider, useForm } from "react-hook-form";
 import TextInputs from "./../../../../components/GlobalInputs/TextInputs"
 import { useCreateCategoryMutation, useGetCategoriesQuery } from "@/redux/features/apiSlice";
+import FileInput from "@/components/GlobalInputs/FileInputs";
 
 const AdminCategories = () => {
     const [filteredCategories, setFilteredCategories] = useState([]);
     const methods = useForm();
     const [searchQuery, setSearchQuery] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
     const [createCategory] = useCreateCategoryMutation(); // Create category mutation
     const { data, isLoading, error } = useGetCategoriesQuery(); // ✅ Fetch categories
     const { handleSubmit, control } = useForm();
+
+    useEffect(() => {
+        if (data?.categories) {
+            setFilteredCategories(data.categories);
+        }
+    }, [data]);
 
     // create catagaries funcation
     const onSubmit = async (data) => {
@@ -115,7 +123,7 @@ const AdminCategories = () => {
                                             <button className="text-red-dark rounded-lg hover:bg-red-700">
                                                 Delete
                                             </button>
-                                        </td>
+                                        </td>``
                                     </tr>
                                 ))
                             )}
@@ -128,11 +136,11 @@ const AdminCategories = () => {
             {/* Modal */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-[rgb(0,0,0,0.4)] bg-opacity-10"
                     onClick={toggleModal}
                 >
                     <div
-                        className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
+                        className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md border-2 border-[#000]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="w-full flex px-2 justify-between items-center">
@@ -141,15 +149,14 @@ const AdminCategories = () => {
                         </div>
                         <FormProvider {...methods}>
                             <form
-                                className="flex flex-col w-[100%] bg-[#000]"
+                                className="flex flex-col w-[100%] bg-[#fff] gap-3"
                                 onSubmit={methods.handleSubmit(onSubmit)}
                             >
-
-                                <TextInputs name={"title"} label={"Name"} className="w-full p-2 border border-gray-300 rounded-lg" />
-                                <input type="file" accept="image/*" {...methods.register("image")} />
+                                <TextInputs bgcolour={"#fff"} name={"title"} label={"Name"} className="w-full p-2 rounded-lg text-black" />
+                                <FileInput labelType="button" label="Image" accept={"image/*"} name={"image"} isAddDropZone={true} />
                                 <button
                                     type="submit"
-                                    className="w-full bg-blue-600 text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
+                                    className="w-full text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
                                 >
                                     Add Category
                                 </button>
@@ -158,6 +165,7 @@ const AdminCategories = () => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

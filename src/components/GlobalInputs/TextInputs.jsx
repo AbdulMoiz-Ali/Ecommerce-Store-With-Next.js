@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 // import HideIcon from "../../../assets/svg/Hide.webp";
@@ -53,11 +54,11 @@ const TextInputs = ({
     <div className={`flex flex-col gap-1 my-3 w-full  ${parentClassName}`}>
       <div className="flex flex-col gap-2" style={passwordInputStyles}>
         {label && (
-          <label htmlFor={name} className="text-white !font-[300] text-sm">
+          <label htmlFor={name} className="text-black !font-[300] text-sm">
             {label} {required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <div className="relative w-full">
+        <div className="relative w-full border-2 rounded-md">
           <input
             value={value}
             {...register(name, {
@@ -88,9 +89,9 @@ const TextInputs = ({
             placeholder={placeholder}
             disabled={disabled}
             style={{ lineHeight: InputlineHeight || "normal" }}
-            className={`w-full bg-[var(--darkest-bg)] h-[${height}]  px-3 border-none focus:outline focus:outline-[var(--primary)] transition-all py-3 rounded-md text-sm font-light bg-[${
+            className={`w-full h-[${height}]  px-3 border py-3 rounded-md text-sm font-light bg-[${
               bgcolour ? bgcolour : "var(--darkest-bg)"
-            }] text-[#fff] 
+            }] text-black 
               ${errors[name] ? "border-red-500" : "border-gray-300"} 
               ${className}`}
           />

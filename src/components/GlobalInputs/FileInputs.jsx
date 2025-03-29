@@ -1,3 +1,4 @@
+"use client";
 // import { Upload } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -5,6 +6,7 @@ import { useFormContext } from "react-hook-form";
 // import { useDispatch } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { setErrorOpen } from "@/redux/features/validSlice";
+// import image from "../../../../../public/images/icons/icon-star.svg"
 // import {
 //   deleteFile,
 //   uploadFile,
@@ -141,7 +143,7 @@ const FileInput = ({
     <div className="flex flex-col w-[100%]">
       <div
         className={` ${isAddDropZone &&
-          "bg-[--dark-bg] w-[100%] mx-auto rounded-lg p-8 flex flex-col items-center justify-center border-3 border-dotted border-[var(--primary)] "
+          " w-[100%] mx-auto rounded-lg p-8 flex flex-col items-center justify-center border border-[4px] border-dotted border-[#000]"
           }`}
         {...(isAddDropZone
           ? {
@@ -170,7 +172,7 @@ const FileInput = ({
 
               )
               : (
-                <span className="flex items-center cursor-pointer gap-2 bg-[var(--primary)] font-semibold text-black px-6 py-2 rounded-md">
+                <span className="flex items-center cursor-pointer gap-2 bg-gray-6 font-semibold text-white px-6 py-2 rounded-md">
                   {/* <Upload className="w-4 h-4" /> */}
                   Upload {label}
                 </span>
