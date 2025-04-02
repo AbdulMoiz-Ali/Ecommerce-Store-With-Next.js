@@ -85,7 +85,9 @@ const FileInput = ({
 
   const handleFileValidation = () => {
     const file = addFile;
-    if (required && !file.length > 0) return `${validationErrors}`;
+    if (required && addFile.length === 0) {
+      return validationErrors || "This field is required."; // Ensure validationErrors is not undefined
+    }
     const fileType = file[0]?.type;
     if (
       acceptedFileType &&
@@ -214,7 +216,7 @@ const FileInput = ({
         </div>
       </div>
       {errors && errors[name] && (
-        <p className="text-red-500 text-sm">{errors[name]?.message}</p>
+        <p className="text-red-5 text-sm">{errors[name]?.message}</p>
       )}
     </div>
   );

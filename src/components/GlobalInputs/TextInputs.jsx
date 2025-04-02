@@ -55,7 +55,7 @@ const TextInputs = ({
       <div className="flex flex-col gap-2" style={passwordInputStyles}>
         {label && (
           <label htmlFor={name} className="text-black !font-[300] text-sm">
-            {label} {required && <span className="text-red-500 ml-1">*</span>}
+            {label} {required && <span className="text-red-light-6 ml-1">*</span>}
           </label>
         )}
         <div className="relative w-full border-2 rounded-md">
@@ -92,7 +92,7 @@ const TextInputs = ({
             className={`w-full h-[${height}]  px-3 border py-3 rounded-md text-sm font-light bg-[${
               bgcolour ? bgcolour : "var(--darkest-bg)"
             }] text-black 
-              ${errors[name] ? "border-red-500" : "border-gray-300"} 
+              ${errors[name] ? "border-red-light-6" : "border-gray-300"} 
               ${className}`}
           />
           {/* {type === "password" &

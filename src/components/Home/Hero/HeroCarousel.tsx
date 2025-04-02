@@ -20,7 +20,7 @@ const HeroCarousal = () => {
       pagination={{
         clickable: true,
       }}
-      modules={[Autoplay, Pagination]}
+      modules={[Autoplay, Pagination]}            
       className="hero-carousel"
     >
       <SwiperSlide>

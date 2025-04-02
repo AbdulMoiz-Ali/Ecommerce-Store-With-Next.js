@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store"
-import { fetchCategories } from "@/redux/features/categorySlice";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import { AiOutlineLoading3Quarters, AiOutlineCheck } from "react-icons/ai";
 import { GiTireIronCross } from "react-icons/gi";
 import { FormProvider, useForm } from "react-hook-form";
 import TextInputs from "./../../../../components/GlobalInputs/TextInputs"
@@ -16,9 +15,11 @@ const AdminCategories = () => {
     const methods = useForm();
     const [searchQuery, setSearchQuery] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [createCategory] = useCreateCategoryMutation(); // Create category mutation
-    const { data, isLoading, error } = useGetCategoriesQuery(); // ✅ Fetch categories
+    const { data, isLoading, error, refetch } = useGetCategoriesQuery(); // ✅ Fetch categories
     const { handleSubmit, control } = useForm();
 
     useEffect(() => {
@@ -29,16 +30,28 @@ const AdminCategories = () => {
 
     // create catagaries funcation
     const onSubmit = async (data) => {
+        setLoading(true);
+        setSuccess(false);
         try {
             const reader = new FileReader();
             reader.readAsDataURL(data.image[0]); // Convert image to Base64
             reader.onloadend = async () => {
                 await createCategory({ title: data.title, image: reader.result }).unwrap();
                 methods.reset();
-                setIsOpen(false);
+                // setIsOpen(false);
+                setLoading(false);
+                setSuccess(true);
+
+                // ✅ Hide check mark after 2 seconds
+                setTimeout(() => {
+                    setSuccess(false);
+                    setIsOpen(false);
+                }, 2000);
+                refetch()
             };
         } catch (error) {
             console.error("Error creating category:", error);
+            setLoading(false);
         }
     };
 
@@ -93,21 +106,37 @@ const AdminCategories = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCategories.length === 0 ? (
+                            {isLoading ? (
+                                // ✅ Skeleton Loader (Show when loading)
+                                [...Array(5)].map((_, index) => (
+                                    <tr key={index} className="hover:bg-gray-100">
+                                        <td className="border-b border-gray-300 p-4 text-gray-700">
+                                            <Skeleton width={64} height={64} borderRadius={8} />
+                                        </td>
+                                        <td className="border-b border-gray-300 p-4 text-gray-700">
+                                            <Skeleton width={120} />
+                                        </td>
+                                        <td className="border-b border-gray-300 p-4 text-gray-700">
+                                            <Skeleton width={100} />
+                                        </td>
+                                        <td className="border-b border-gray-300 p-4 text-gray-700">
+                                            <Skeleton width={80} />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : filteredCategories.length === 0 ? (
                                 <tr>
-                                    <td
-                                        colSpan={3}
-                                        className="text-center w-full p-6 text-gray-500 border-b border-gray-300"
-                                    >
+                                    <td colSpan={4} className="text-center w-full p-6 text-gray-500 border-b border-gray-300">
                                         No results.
                                     </td>
                                 </tr>
                             ) : (
+                                // ✅ Actual Data (Show when loaded)
                                 filteredCategories.map((category) => (
                                     <tr key={category._id} className="hover:bg-gray-100">
                                         <td className="border-b border-gray-300 p-4 text-gray-700">
                                             <img
-                                                src={category.image} // ✅ Fixed image source
+                                                src={category.image}
                                                 alt={category.title}
                                                 className="w-16 h-16 object-cover rounded"
                                             />
@@ -123,11 +152,12 @@ const AdminCategories = () => {
                                             <button className="text-red-dark rounded-lg hover:bg-red-700">
                                                 Delete
                                             </button>
-                                        </td>``
+                                        </td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
+
                     </table>
 
                 </div>
@@ -143,25 +173,45 @@ const AdminCategories = () => {
                         className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md border-2 border-[#000]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="w-full flex px-2 justify-between items-center">
-                            <h3 className="text-lg font-semibold text-gray-900">Add New Category</h3>
-                            <GiTireIronCross className="pointer-cursore" onClick={toggleModal} />
-                        </div>
-                        <FormProvider {...methods}>
-                            <form
-                                className="flex flex-col w-[100%] bg-[#fff] gap-3"
-                                onSubmit={methods.handleSubmit(onSubmit)}
-                            >
-                                <TextInputs bgcolour={"#fff"} name={"title"} label={"Name"} className="w-full p-2 rounded-lg text-black" />
-                                <FileInput labelType="button" label="Image" accept={"image/*"} name={"image"} isAddDropZone={true} />
-                                <button
-                                    type="submit"
-                                    className="w-full text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Add Category
-                                </button>
-                            </form>
-                        </FormProvider>
+
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
+                                <span className="animate-spin text-3xl text-blue-500">
+                                    <AiOutlineLoading3Quarters />
+                                </span>
+                                <p className="mt-3 text-gray-700">Creating Category...</p>
+                            </div>
+                        ) : success ? (
+                            <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
+                                <span className="text-3xl text-green-500">
+                                    <AiOutlineCheck />
+                                </span>
+                                <p className="mt-3 text-green-700">Category Created Successfully!</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-full flex px-2 justify-between items-center">
+                                    <h3 className="text-lg font-semibold text-gray-900">Add New Category</h3>
+                                    <GiTireIronCross className="pointer-cursore" onClick={toggleModal} />
+                                </div>
+                                <FormProvider {...methods}>
+                                    <form
+                                        className="flex flex-col w-[100%] bg-[#fff] gap-3"
+                                        onSubmit={methods.handleSubmit(onSubmit)}
+                                    >
+                                        <TextInputs required={true} validationError={"Title is required"} bgcolour={"#fff"} name={"title"} label={"Name"} className="w-full p-2 rounded-lg text-black" />
+                                        <FileInput required={true} validationErrors={"Image is required"} maxFileSize={"1mb"} labelType="button" label="Image" accept={"image/*"} name={"image"} isAddDropZone={true} />
+                                        <button
+                                            disabled={loading} // Disable button when loading
+                                            type="submit"
+                                            className="w-full text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
+                                        >
+                                            {loading ? "Adding..." : "Add Category"}
+                                        </button>
+                                    </form>
+                                </FormProvider>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
