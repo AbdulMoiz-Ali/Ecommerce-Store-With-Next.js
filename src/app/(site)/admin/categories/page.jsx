@@ -7,7 +7,7 @@ import { AiOutlineLoading3Quarters, AiOutlineCheck } from "react-icons/ai";
 import { GiTireIronCross } from "react-icons/gi";
 import { FormProvider, useForm } from "react-hook-form";
 import TextInputs from "./../../../../components/GlobalInputs/TextInputs"
-import { useCreateCategoryMutation, useGetCategoriesQuery } from "@/redux/features/apiSlice";
+import { useCreateCategoryMutation, useGetCategoriesQuery, useEditCategoryMutation, useDeleteCategoryMutation } from "@/redux/features/apiSlice";
 import FileInput from "@/components/GlobalInputs/FileInputs";
 
 const AdminCategories = () => {
@@ -17,16 +17,47 @@ const AdminCategories = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editCategoryId, setEditCategoryId] = useState(null);
     const [createCategory] = useCreateCategoryMutation(); // Create category mutation
+    const [editCategory] = useEditCategoryMutation()
+    const [deleteCategory] = useDeleteCategoryMutation();
     const { data, isLoading, error, refetch } = useGetCategoriesQuery(); // ✅ Fetch categories
     const { handleSubmit, control } = useForm();
 
     useEffect(() => {
         if (data?.categories) {
-            setFilteredCategories(data.categories);
+            const sortedCategories = [...data.categories].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setFilteredCategories(sortedCategories);
         }
     }, [data]);
+
+   // create catagaries funcation
+//    const onSubmit = async (data) => {
+//     setLoading(true);
+//     setSuccess(false);
+//     try {
+//         const reader = new FileReader();
+//         reader.readAsDataURL(data.image[0]); // Convert image to Base64
+//         reader.onloadend = async () => {
+//             await createCategory({ title: data.title, image: reader.result }).unwrap();
+//             methods.reset();
+//             // setIsOpen(false);
+//             setLoading(false);
+//             setSuccess(true);
+
+//             // ✅ Hide check mark after 2 seconds
+//             setTimeout(() => {
+//                 setSuccess(false);
+//                 setIsOpen(false);
+//             }, 2000);
+//             refetch()
+//         };
+//     } catch (error) {
+//         console.error("Error creating category:", error);
+//         setLoading(false);
+//     }
+// };
 
     // create catagaries funcation
     const onSubmit = async (data) => {
@@ -36,7 +67,20 @@ const AdminCategories = () => {
             const reader = new FileReader();
             reader.readAsDataURL(data.image[0]); // Convert image to Base64
             reader.onloadend = async () => {
-                await createCategory({ title: data.title, image: reader.result }).unwrap();
+                // await createCategory({ title: data.title, image: reader.result }).unwrap();
+                const categoryData = { title: data.title, image: reader.result };
+              
+                if (editMode) {
+                    console.log(...categoryData)
+                    // ✅ Edit Category API Call
+                    await editCategory({ id: editCategoryId, ...categoryData }).unwrap();
+                    
+                    debugger 
+                } else {
+                    // ✅ Create Category API Call
+                    await createCategory(categoryData).unwrap();
+                }
+
                 methods.reset();
                 // setIsOpen(false);
                 setLoading(false);
@@ -46,6 +90,8 @@ const AdminCategories = () => {
                 setTimeout(() => {
                     setSuccess(false);
                     setIsOpen(false);
+                    setEditMode(false);
+                    setEditCategoryId(null);
                 }, 2000);
                 refetch()
             };
@@ -55,19 +101,40 @@ const AdminCategories = () => {
         }
     };
 
-    // handelSearch Funcation
+    // Handle Delete
+    const handleDelete = async (id) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this category?");
+        if (confirmDelete) {
+            try {
+                await deleteCategory(id).unwrap();
+                refetch();
+                alert("Category deleted successfully!");
+            } catch (error) {
+                console.error("Delete Error:", error);
+                alert("Error deleting category!");
+            }
+        }
+    };
 
+    // Handle Edit Button Click
+    const handleEdit = (category) => {
+        methods.setValue("title", category.title);
+        setEditCategoryId(category._id);
+        setEditMode(true);
+        setIsOpen(true);
+    };
+    // handelSearch Funcation
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
 
-        const filtered = data?.categories?.filter((category) =>
-            category.title?.toLowerCase().includes(query)
-        );
+        const filtered = data?.categories
+            ?.filter((category) => category.title?.toLowerCase().includes(query))
+            ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sorting latest first
 
         setFilteredCategories(filtered);
-        // console.log("filteredCategories",filteredCategories)
     };
+
 
 
     const toggleModal = () => {
@@ -81,7 +148,12 @@ const AdminCategories = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Categories</h1>
                     <button
                         className="bg-blue-600 text-white bg-gray-6 px-6 py-2 rounded-lg hover:bg-blue-700 shadow-lg"
-                        onClick={toggleModal}
+                        // onClick={toggleModal}
+                        onClick={() => {
+                            setEditMode(false);
+                            methods.reset();
+                            setIsOpen(true);
+                        }}
                     >
                         + Add Category
                     </button>
@@ -146,10 +218,10 @@ const AdminCategories = () => {
                                             {new Date(category.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="border-b border-gray-300 p-4 text-gray-700">
-                                            <button className="text-green-dark px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                                            <button onClick={() => handleEdit(category)} className="text-green-dark px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
                                                 Edit
                                             </button>
-                                            <button className="text-red-dark rounded-lg hover:bg-red-700">
+                                            <button onClick={() => handleDelete(category._id)} className="text-red-dark rounded-lg hover:bg-red-700">
                                                 Delete
                                             </button>
                                         </td>
@@ -191,7 +263,7 @@ const AdminCategories = () => {
                         ) : (
                             <>
                                 <div className="w-full flex px-2 justify-between items-center">
-                                    <h3 className="text-lg font-semibold text-gray-900">Add New Category</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{editMode ? "Edit Category" : "Add New Category"}</h3>
                                     <GiTireIronCross className="pointer-cursore" onClick={toggleModal} />
                                 </div>
                                 <FormProvider {...methods}>
@@ -206,7 +278,7 @@ const AdminCategories = () => {
                                             type="submit"
                                             className="w-full text-white bg-gray-6 py-2 rounded-lg hover:bg-blue-700"
                                         >
-                                            {loading ? "Adding..." : "Add Category"}
+                                            {loading ? "Processing..." : editMode ? "Update Category" : "Add Category"}
                                         </button>
                                     </form>
                                 </FormProvider>
@@ -221,66 +293,3 @@ const AdminCategories = () => {
 };
 
 export default AdminCategories;
-
-
-// const [editModalOpen, setEditModalOpen] = useState(false);
-// const [selectedCategory, setSelectedCategory] = useState(null);
-// const [updatedTitle, setUpdatedTitle] = useState("");
-// const [updatedImage, setUpdatedImage] = useState(null);
-
-//   // Open Edit Modal
-//   const openEditModal = (category) => {
-//     setSelectedCategory(category._id);
-//     setUpdatedTitle(category.title);
-//     setUpdatedImage(category.image)
-//     setEditModalOpen(true);
-// };
-
-// // Close Modal
-// const closeEditModal = () => {
-//     setEditModalOpen(false);
-//     setSelectedCategory(null);
-// };
-
-{/* {editModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                        <h2 className="text-xl font-bold mb-4">Edit Category</h2>
-                        <form onSubmit={handleUpdateCategory}>
-                            <div className="mb-4">
-                                <label className="block mb-2 text-sm font-medium">Title</label>
-                                <input
-                                    type="text"
-                                    value={updatedTitle}
-                                    onChange={(e) => setUpdatedTitle(e.target.value)}
-                                    className="w-full p-3 rounded-lg border border-gray-300"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2 text-sm font-medium">Upload New Image</label>
-                                <input
-                                    type="file"
-                                    onChange={(e) => setUpdatedImage(e.target.files[0])}
-                                    className="w-full p-3 rounded-lg border border-gray-300"
-                                />
-                            </div>
-                            <div className="flex justify-between">
-                                <button
-                                    type="submit"
-                                    className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700"
-                                >
-                                    Update
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={closeEditModal}
-                                    className="bg-gray-500  px-4 py-2 rounded-lg hover:bg-gray-600"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )} */}
