@@ -108,7 +108,6 @@ export default async function handler(req, res) {
     await connectDB();
 
     const { id } = req.query;
-
     // ✅ Validate ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ success: false, message: "Invalid Category ID" });
@@ -138,7 +137,6 @@ export default async function handler(req, res) {
             const updatedCategory = await Category.findByIdAndUpdate(
                 id,
                 { title, image: imageUrl },
-                { new: true, runValidators: true }
             );
 
             return res.status(200).json({

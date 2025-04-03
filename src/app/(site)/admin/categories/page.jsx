@@ -19,6 +19,10 @@ const AdminCategories = () => {
     const [success, setSuccess] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editCategoryId, setEditCategoryId] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [createCategory] = useCreateCategoryMutation(); // Create category mutation
     const [editCategory] = useEditCategoryMutation()
     const [deleteCategory] = useDeleteCategoryMutation();
@@ -32,98 +36,133 @@ const AdminCategories = () => {
         }
     }, [data]);
 
-   // create catagaries funcation
-//    const onSubmit = async (data) => {
-//     setLoading(true);
-//     setSuccess(false);
-//     try {
-//         const reader = new FileReader();
-//         reader.readAsDataURL(data.image[0]); // Convert image to Base64
-//         reader.onloadend = async () => {
-//             await createCategory({ title: data.title, image: reader.result }).unwrap();
-//             methods.reset();
-//             // setIsOpen(false);
-//             setLoading(false);
-//             setSuccess(true);
-
-//             // ✅ Hide check mark after 2 seconds
-//             setTimeout(() => {
-//                 setSuccess(false);
-//                 setIsOpen(false);
-//             }, 2000);
-//             refetch()
-//         };
-//     } catch (error) {
-//         console.error("Error creating category:", error);
-//         setLoading(false);
-//     }
-// };
-
-    // create catagaries funcation
+    // create or edit categories function
     const onSubmit = async (data) => {
         setLoading(true);
         setSuccess(false);
         try {
-            const reader = new FileReader();
-            reader.readAsDataURL(data.image[0]); // Convert image to Base64
-            reader.onloadend = async () => {
-                // await createCategory({ title: data.title, image: reader.result }).unwrap();
-                const categoryData = { title: data.title, image: reader.result };
-              
-                if (editMode) {
-                    console.log(...categoryData)
-                    // ✅ Edit Category API Call
-                    await editCategory({ id: editCategoryId, ...categoryData }).unwrap();
+            if (data.image[0].size > 1000000) { // 1MB in bytes
+                throw new Error("Image size exceeds 1MB limit. Please choose a smaller image.");
+            }
+            if (editMode) {
+                // Edit Category logic
+                let updatedData = { title: data.title };
+
+                // Only process image if it exists and is a File object
+                if (data.image && data.image.length > 0 && data.image[0]) {
                     
-                    debugger 
+                    const reader = new FileReader();
+                    reader.readAsDataURL(data.image[0]); // Convert image to Base64
+
+                    reader.onloadend = async () => {
+                        updatedData.image = reader.result;
+
+                        // Call edit API with image
+                        await editCategory({
+                            id: editCategoryId,
+                            updatedData: updatedData,
+                        }).unwrap();
+
+                        handleSubmitSuccess();
+                    };
                 } else {
-                    // ✅ Create Category API Call
-                    await createCategory(categoryData).unwrap();
+                    // Include the existing image when no new image is provided
+                    const existingCategory = filteredCategories.find(cat => cat._id === editCategoryId);
+                    if (existingCategory && existingCategory.image) {
+                        updatedData.image = existingCategory.image;
+                    }
+
+                    // Call edit API with the existing image
+                    await editCategory({
+                        id: editCategoryId,
+                        updatedData: updatedData,
+                    }).unwrap();
+
+                    handleSubmitSuccess();
                 }
+            } else {
+                // Create Category logic - image is required
+                const reader = new FileReader();
+                reader.readAsDataURL(data.image[0]); // Convert image to Base64
 
-                methods.reset();
-                // setIsOpen(false);
-                setLoading(false);
-                setSuccess(true);
+                reader.onloadend = async () => {
+                    await createCategory({
+                        title: data.title,
+                        image: reader.result
+                    }).unwrap();
 
-                // ✅ Hide check mark after 2 seconds
-                setTimeout(() => {
-                    setSuccess(false);
-                    setIsOpen(false);
-                    setEditMode(false);
-                    setEditCategoryId(null);
-                }, 2000);
-                refetch()
-            };
+                    handleSubmitSuccess();
+                };
+            }
         } catch (error) {
-            console.error("Error creating category:", error);
+            console.error("Error with category operation:", error);
             setLoading(false);
         }
     };
 
-    // Handle Delete
-    const handleDelete = async (id) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this category?");
-        if (confirmDelete) {
-            try {
-                await deleteCategory(id).unwrap();
+    // Handle success for both create and edit operations
+    const handleSubmitSuccess = () => {
+        methods.reset();
+        setLoading(false);
+        setSuccess(true);
+
+        // Hide check mark after 2 seconds
+        setTimeout(() => {
+            setSuccess(false);
+            setIsOpen(false);
+            setEditMode(false);
+            setEditCategoryId(null);
+        }, 2000);
+        refetch();
+    };
+
+    // Open delete confirmation modal
+    const openDeleteModal = (category) => {
+        setCategoryToDelete(category);
+        setDeleteModalOpen(true);
+    };
+
+    // Close delete confirmation modal
+    const closeDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setDeleteLoading(false);
+        setDeleteSuccess(false);
+        setTimeout(() => {
+            setCategoryToDelete(null);
+        }, 300);
+    };
+
+    // Actually perform the delete after confirmation
+    const confirmDelete = async () => {
+        if (!categoryToDelete) return;
+
+        try {
+            setDeleteLoading(true);
+            await deleteCategory(categoryToDelete._id).unwrap();
+            setDeleteLoading(false);
+            setDeleteSuccess(true);
+
+            // Show success for 1.5 seconds then close the modal and refresh
+            setTimeout(() => {
+                closeDeleteModal();
                 refetch();
-                alert("Category deleted successfully!");
-            } catch (error) {
-                console.error("Delete Error:", error);
-                alert("Error deleting category!");
-            }
+            }, 1500);
+        } catch (error) {
+            console.error("Delete Error:", error);
+            setDeleteLoading(false);
         }
     };
 
     // Handle Edit Button Click
     const handleEdit = (category) => {
         methods.setValue("title", category.title);
+        // Don't set the image value - it will be optional during edit
         setEditCategoryId(category._id);
         setEditMode(true);
         setIsOpen(true);
     };
-    // handelSearch Funcation
+
+    // handleSearch Function
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
@@ -134,8 +173,6 @@ const AdminCategories = () => {
 
         setFilteredCategories(filtered);
     };
-
-
 
     const toggleModal = () => {
         setIsOpen(!isOpen);
@@ -148,7 +185,6 @@ const AdminCategories = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Categories</h1>
                     <button
                         className="bg-blue-600 text-white bg-gray-6 px-6 py-2 rounded-lg hover:bg-blue-700 shadow-lg"
-                        // onClick={toggleModal}
                         onClick={() => {
                             setEditMode(false);
                             methods.reset();
@@ -167,7 +203,6 @@ const AdminCategories = () => {
                     className="w-full p-3 mb-6 rounded-lg bg-white border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="overflow-x-auto">
-
                     <table className="w-full border-collapse bg-white shadow-lg rounded-lg">
                         <thead className="bg-gray-200">
                             <tr>
@@ -218,10 +253,16 @@ const AdminCategories = () => {
                                             {new Date(category.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="border-b border-gray-300 p-4 text-gray-700">
-                                            <button onClick={() => handleEdit(category)} className="text-green-dark px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                                            <button
+                                                onClick={() => handleEdit(category)}
+                                                className="text-green-dark px-4 py-2 rounded-lg hover:bg-blue-700 mr-2"
+                                            >
                                                 Edit
                                             </button>
-                                            <button onClick={() => handleDelete(category._id)} className="text-red-dark rounded-lg hover:bg-red-700">
+                                            <button
+                                                onClick={() => openDeleteModal(category)}
+                                                className="text-red-dark px-4 py-2 rounded-lg hover:bg-red-700"
+                                            >
                                                 Delete
                                             </button>
                                         </td>
@@ -229,13 +270,11 @@ const AdminCategories = () => {
                                 ))
                             )}
                         </tbody>
-
                     </table>
-
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Create/Edit Modal */}
             {isOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-[rgb(0,0,0,0.4)] bg-opacity-10"
@@ -245,34 +284,57 @@ const AdminCategories = () => {
                         className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md border-2 border-[#000]"
                         onClick={(e) => e.stopPropagation()}
                     >
-
                         {loading ? (
                             <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
                                 <span className="animate-spin text-3xl text-blue-500">
                                     <AiOutlineLoading3Quarters />
                                 </span>
-                                <p className="mt-3 text-gray-700">Creating Category...</p>
+                                <p className="mt-3 text-gray-700">{editMode ? "Updating Category..." : "Creating Category..."}</p>
                             </div>
                         ) : success ? (
                             <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
                                 <span className="text-3xl text-green-500">
                                     <AiOutlineCheck />
                                 </span>
-                                <p className="mt-3 text-green-700">Category Created Successfully!</p>
+                                <p className="mt-3 text-green-700">{editMode ? "Category Updated Successfully!" : "Category Created Successfully!"}</p>
                             </div>
                         ) : (
                             <>
                                 <div className="w-full flex px-2 justify-between items-center">
                                     <h3 className="text-lg font-semibold text-gray-900">{editMode ? "Edit Category" : "Add New Category"}</h3>
-                                    <GiTireIronCross className="pointer-cursore" onClick={toggleModal} />
+                                    <GiTireIronCross className="pointer-cursore cursor-pointer" onClick={toggleModal} />
                                 </div>
                                 <FormProvider {...methods}>
                                     <form
                                         className="flex flex-col w-[100%] bg-[#fff] gap-3"
                                         onSubmit={methods.handleSubmit(onSubmit)}
                                     >
-                                        <TextInputs required={true} validationError={"Title is required"} bgcolour={"#fff"} name={"title"} label={"Name"} className="w-full p-2 rounded-lg text-black" />
-                                        <FileInput required={true} validationErrors={"Image is required"} maxFileSize={"1mb"} labelType="button" label="Image" accept={"image/*"} name={"image"} isAddDropZone={true} />
+                                        <TextInputs
+                                            required={true}
+                                            validationError={"Title is required"}
+                                            bgcolour={"#fff"}
+                                            name={"title"}
+                                            label={"Name"}
+                                            className="w-full p-2 rounded-lg text-black"
+                                        />
+
+                                        <FileInput
+                                            required={editMode ? false : true}
+                                            validationErrors={editMode ? "" : "Image is required"}
+                                            maxFileSize={"1mb"}
+                                            labelType="button"
+                                            label={editMode ? "Change Image (Optional)" : "Image"}
+                                            accept={"image/*"}
+                                            name={"image"}
+                                            isAddDropZone={true}
+                                        />
+
+                                        {editMode && (
+                                            <p className="text-gray-500 text-sm italic">
+                                                Leave the image field empty if you don't want to change the image.
+                                            </p>
+                                        )}
+
                                         <button
                                             disabled={loading} // Disable button when loading
                                             type="submit"
@@ -288,6 +350,63 @@ const AdminCategories = () => {
                 </div>
             )}
 
+            {/* Delete Confirmation Modal */}
+            {deleteModalOpen && categoryToDelete && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-[rgb(0,0,0,0.4)] bg-opacity-10"
+                    onClick={closeDeleteModal}
+                >
+                    <div
+                        className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md border-2 border-[#000]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {deleteLoading ? (
+                            <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
+                                <span className="animate-spin text-3xl text-red-500">
+                                    <AiOutlineLoading3Quarters />
+                                </span>
+                                <p className="mt-3 text-gray-700">Deleting Category...</p>
+                            </div>
+                        ) : deleteSuccess ? (
+                            <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
+                                <span className="text-3xl text-green-500">
+                                    <AiOutlineCheck />
+                                </span>
+                                <p className="mt-3 text-green-700">Category Deleted Successfully!</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-full flex px-2 justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">Delete Category</h3>
+                                    <GiTireIronCross className="pointer-cursore cursor-pointer" onClick={closeDeleteModal} />
+                                </div>
+                                <div className="text-center mb-6">
+                                    <p className="text-gray-700 mb-3">
+                                        Are you sure you want to delete the category "{categoryToDelete.title}"?
+                                    </p>
+                                    <p className="text-gray-500 text-sm">
+                                        This action cannot be undone.
+                                    </p>
+                                </div>
+                                <div className="flex justify-center space-x-4">
+                                    <button
+                                        onClick={closeDeleteModal}
+                                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDelete}
+                                        className="px-4 py-2 bg-red-500 text-white rounded-lg bg-red-dark"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -84,20 +84,26 @@ const FileInput = ({
   };
 
   const handleFileValidation = () => {
-    const file = addFile;
-    if (required && addFile.length === 0) {
-      return validationErrors || "This field is required."; // Ensure validationErrors is not undefined
-    }
-    const fileType = file[0]?.type;
+    if (addFile.length === 0) return; // Agar file nahi hai, toh koi error return nahi karna
+
+    const file = addFile[0]; 
+    if (!file) return; // Extra safety check
+
+    const fileType = file.type;
+    
     if (
-      acceptedFileType &&
-      !acceptedFileType.includes(fileType) &&
-      !acceptedFileType?.includes("*")
-    )
-      return `Only ${acceptedFileType?.join(" , ")} files are allowed`;
-    if (maxSizeInBytes && file[0].size > maxSizeInBytes)
-      return `File size must be less than ${maxSizeInBytes / (1024 * 1024)} MB`;
-  };
+        acceptedFileType &&
+        !acceptedFileType.includes(fileType) &&
+        !acceptedFileType?.includes("*")
+    ) {
+        return `Only ${acceptedFileType?.join(" , ")} files are allowed`;
+    }
+
+    if (maxSizeInBytes && file.size > maxSizeInBytes) {
+        return `File size must be less than ${maxSizeInBytes / (1024 * 1024)} MB`;
+    }
+};
+
 
   const handleDrop = (event) => {
     event.preventDefault();
@@ -192,7 +198,7 @@ const FileInput = ({
                 if (event.target?.files?.length < 1) {
                   setError(name, {
                     type: "manual",
-                    message: `${validationErrors}.`,
+                    message: `${validationErrors || "This field is required."}.`,
                   });
                 } else {
                   setError(name, {
