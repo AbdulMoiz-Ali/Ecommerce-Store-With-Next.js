@@ -10,7 +10,7 @@ import validReducer from "@/redux/features/validSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Use localStorage
 import { TypedUseSelectorHook, useSelector } from "react-redux";
-import { categoryApi } from "./features/apiSlice";
+import { categoryApi } from "./features/categoryApi";
 
 // Persist configuration
 const persistConfig = {

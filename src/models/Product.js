@@ -52,7 +52,6 @@ const ProductSchema = new Schema(
         name: {
             type: String,
             required: [true, "Product name is required"]
-
         },
         price: {
             type: Number,
@@ -65,7 +64,7 @@ const ProductSchema = new Schema(
         },
         image: {
             type: String,
-            // required: [true, "Product image is required"]
+            required: [true, "Product image is required"]
         },
         // description: {
         //     type: String,

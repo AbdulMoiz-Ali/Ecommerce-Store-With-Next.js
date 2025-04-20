@@ -222,7 +222,7 @@ const FileInput = ({
         </div>
       </div>
       {errors && errors[name] && (
-        <p className="text-red-5 text-sm">{errors[name]?.message}</p>
+        <p className="text-dark-red text-sm">{errors[name]?.message}</p>
       )}
     </div>
   );
