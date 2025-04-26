@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react"
-import { useCreateCategoryMutation, useGetCategoriesQuery, useEditCategoryMutation, useDeleteCategoryMutation } from "@/redux/features/categoryApiApi";
+import { useCreateCategoryMutation, useGetCategoriesQuery, useEditCategoryMutation, useDeleteCategoryMutation } from "@/redux/features/categoryApi";
 import CreateEditModal from "../../../../components/Admin/Catagarie/CreateEditModal"
 import DeleteModal from "../../../../components/Admin/Catagarie/DeleteModal"
 import CategoriesRender from "../../../../components/Admin/Catagarie/CategoriesRender"

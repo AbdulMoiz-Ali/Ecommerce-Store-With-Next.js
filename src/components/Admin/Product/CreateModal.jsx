@@ -15,8 +15,6 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
         control,
         name: "additionalInfo",
     });
-    // Inside your CreateModal component
-    // For variations
     const { fields: variations, append: appendVariation, remove: removeVariation } = useFieldArray({
         control,
         name: "variations",
@@ -28,28 +26,12 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                 onClick={toggleModal}
             >
                 <div
-                    className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-[80%] border-2 border-[#000] h-[80%] overflow-y-auto
-                    "
+                    className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-[80%] border-2 border-[#000] h-[80%] overflow-y-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* {loading ? (
-                        <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
-                            <span className="animate-spin text-3xl text-blue-500">
-                                <AiOutlineLoading3Quarters />
-                            </span>
-                            <p className="mt-3 text-gray-700">{editMode ? "Updating Category..." : "Creating Category..."}</p>
-                        </div>
-                    ) : success ? (
-                        <div className="flex flex-col items-center justify-center w-full p-6 bg-white rounded-lg animate-fade-in">
-                            <span className="text-3xl text-green-500">
-                                <AiOutlineCheck />
-                            </span>
-                            <p className="mt-3 text-green-700">{editMode ? "Category Updated Successfully!" : "Category Created Successfully!"}</p>
-                        </div>
-                    ) : ( */}
                     <>
                         <div className="w-full flex px-2 justify-between items-center">
-                            <h3 className="text-lg font-semibold text-gray-900">{editMode ? "Edit Category" : "Add New Category"}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{editMode ? "Edit Product" : "Add New Product"}</h3>
                             <GiTireIronCross className="pointer-cursore cursor-pointer" onClick={toggleModal} />
                         </div>
                         <FormProvider {...methods}>
@@ -96,6 +78,70 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                                     accept={"image/*"}
                                     name={"image"}
                                     isAddDropZone={true}
+                                />
+
+                                <TextInputs
+                                    required={true}
+                                    validationError={"Stock is Required"}
+                                    bgcolour={"#fff"}
+                                    name={"stock"}
+                                    label={"Stock"}
+                                    placeholder={"100"}
+                                    className="w-full p-2 rounded-lg text-black"
+                                    type="number"
+                                />
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-gray-800">Delivery </label>
+                                    <select
+                                        {...methods.register("delivery")}
+                                        className="p-2 border rounded bg-white text-black"
+                                        defaultValue="Cash"
+                                    >
+                                        <option value="Cash">Cash to Payment</option>
+                                        <option value="Cradit">Cradit Card</option>
+                                    </select>
+                                </div>
+
+                                <TextInputs
+                                    required={false}
+                                    // validationError={"offerEndTime is Required"}
+                                    bgcolour={"#fff"}
+                                    name={"offerEndTime"}
+                                    label={"Offer End Time"}
+                                    placeholder={"01/12/2025"}
+                                    className="w-full p-2 rounded-lg text-black"
+                                    type="date"
+                                />
+
+                                <TextInputs
+                                    required={false}
+                                    // validationError={"offerEndTime is Required"}
+                                    bgcolour={"#fff"}
+                                    name={"featured"}
+                                    label={"Featured :"}
+                                    placeholder={"false"}
+                                    className="w-full p-2 rounded-lg text-black"
+                                />
+
+                                <TextInputs
+                                    required={false}
+                                    // validationError={"offerEndTime is Required"}
+                                    bgcolour={"#fff"}
+                                    name={"topPick"}
+                                    label={"Top Pick:"}
+                                    placeholder={"false"}
+                                    className="w-full p-2 rounded-lg text-black"
+                                />
+
+                                <TextInputs
+                                    required={false}
+                                    // validationError={"offerEndTime is Required"}
+                                    bgcolour={"#fff"}
+                                    name={"isEnabled"}
+                                    label={"Enabled:"}
+                                    placeholder={"false"}
+                                    className="w-full p-2 rounded-lg text-black"
                                 />
 
                                 {fields.map((item, index) => (
@@ -189,12 +235,6 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                                     </button>
                                 </div>
 
-                                {/* {editMode && ( <p className="text-gray-500 text-sm italic">
-                                            Leave the image field empty if you don't want to change the image.
-                                        </p>
-                                       
-                                    )} */}
-
                                 <button
                                     // disabled={loading} // Disable button when loading
                                     type="submit"
@@ -206,7 +246,6 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                             </form>
                         </FormProvider>
                     </>
-                    {/* )} */}
                 </div>
             </div>
         </>

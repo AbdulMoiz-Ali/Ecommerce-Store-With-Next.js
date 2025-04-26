@@ -55,13 +55,13 @@ const CategoriesRender = ({ categories = [], isLoading, handleEdit, openDeleteMo
                                 <td className="border-b border-gray-300 p-4 text-gray-700">
                                     <button
                                         onClick={() => handleEdit(category)}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-2"
+                                        className="bg-blue-500 text-green-dark px-4 py-2 rounded-lg hover:bg-blue-700 mr-2"
                                     >
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => openDeleteModal(category)}
-                                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                                        className="bg-red-500 text-red-dark px-4 py-2 rounded-lg hover:bg-red-700"
                                     >
                                         Delete
                                     </button>
