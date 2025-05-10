@@ -5,11 +5,11 @@ export const categoryApi = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: "/api/category" }),
     endpoints: (builder) => ({
         getCategories: builder.query({
-            query: () => "/getall",
+            query: () => "http://localhost:4000/categories",
         }),
         createCategory: builder.mutation({
             query: (newCategory) => ({
-                url: "/Createcategories",
+                url: "http://localhost:4000/categories",
                 method: "POST",
                 body: newCategory,
                 headers: {
@@ -19,7 +19,7 @@ export const categoryApi = createApi({
         }),
         editCategory: builder.mutation({
             query: ({ id, updatedData }) => ({
-                url: `/${id}`,
+                url: `http://localhost:4000/categories/${id}`,
                 method: "PUT",
                 body: updatedData,
                 headers: { "Content-Type": "application/json" },
@@ -27,7 +27,7 @@ export const categoryApi = createApi({
         }),
         deleteCategory: builder.mutation({
             query: (id) => ({
-                url: `/${id}`,
+                url: `http://localhost:4000/categories/${id}`,
                 method: "DELETE",
             }),
         }),

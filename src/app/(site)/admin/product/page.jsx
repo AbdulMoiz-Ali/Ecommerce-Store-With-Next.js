@@ -7,10 +7,12 @@ import React, { useEffect, useState } from "react";
 import { GiTireIronCross } from "react-icons/gi";
 import { FormProvider, useForm } from "react-hook-form";
 import CreateModal from "../../../../components/Admin/Product/CreateModal"
+import { useCreateProductMutation } from "@/redux/features/productApi";
 
 const AdminProduct = () => {
     const [isOpen, setIsOpen] = useState(false);
     // const methods = useForm();
+    const [createProduct, { isLoading, isSuccess, error }] = useCreateProductMutation()
 
 
     const methods = useForm({
@@ -24,14 +26,48 @@ const AdminProduct = () => {
     });
 
 
+    const { handleSubmit, control, register, watch, formState: { errors } } = methods;
+
     const toggleModal = () => {
         setIsOpen(!isOpen);
     };
+    const onSubmit = async (data) => {
+        try {
+            const formData = new FormData();
 
-    const { handleSubmit, control, register } = methods;
+            // If your input field is named "image" (not "images")
+            for (let i = 0; i < data.image.length; i++) {
+                formData.append('images', data.image[i]); // backend expects 'images'
+            }
 
-    const onSubmit = (data) => {
-        console.log("Form data ===>", data);
+            // Other fields
+            formData.append('name', data.name);
+            formData.append('price', data.price);
+            formData.append('discount', data.discount);
+            formData.append('stock', data.stock);
+            formData.append('delivery', data.delivery);
+            formData.append('offerEndTime', data.offerEndTime || '');
+            formData.append('featured', data.featured);
+            formData.append('topPick', data.topPick);
+            formData.append('selectionMode', data.selectionMode);
+            formData.append('description', data.description);
+            formData.append('category', data.category);
+
+            // Stringify arrays/objects
+            if (data.variations) {
+                formData.append('variations', JSON.stringify(data.variations));
+            }
+            if (data.reviews) {
+                formData.append('reviews', JSON.stringify(data.reviews));
+            }
+            if (data.additionalInfo) {
+                formData.append('additionalInfo', JSON.stringify(data.additionalInfo));
+            }
+
+            await createProduct(formData).unwrap();
+        } catch (error) {
+            console.error('Product Creation Error:', error);
+        }
     };
 
 
@@ -68,6 +104,7 @@ const AdminProduct = () => {
                             toggleModal={toggleModal}
                             control={control}
                             register={register}
+                            errors={errors}
                         />
                     )}
                 </div>

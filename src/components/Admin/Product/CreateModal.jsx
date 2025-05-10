@@ -5,8 +5,9 @@ import { FormProvider, useFieldArray } from "react-hook-form";
 import TextInputs from "../../GlobalInputs/TextInputs"
 import FileInput from "../../GlobalInputs/FileInputs";
 import VariationGroup from "./VariationGroup"
+import { useCreateProductMutation } from "@/redux/features/productApi";
 
-const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, success, control, register }) => {
+const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, success, control, register, errors }) => {
     const { fields, append, remove } = useFieldArray({
         control,
         name: "description",
@@ -92,15 +93,18 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                                 />
 
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium text-gray-800">Delivery </label>
+                                    <label className="font-medium text-gray-800">Delivery</label>
                                     <select
-                                        {...methods.register("delivery")}
+                                        {...register("delivery", { required: "Delivery information is required" })}
                                         className="p-2 border rounded bg-white text-black"
                                         defaultValue="Cash"
                                     >
-                                        <option value="Cash">Cash to Payment</option>
-                                        <option value="Cradit">Cradit Card</option>
+                                        <option value="Cash">Cash on Delivery</option>
+                                        <option value="Credit">Credit Card</option>
                                     </select>
+                                    {errors.delivery && (
+                                        <p className="text-red-500 text-sm">{errors.delivery.message}</p>
+                                    )}
                                 </div>
 
                                 <TextInputs
@@ -114,35 +118,39 @@ const CreateModal = ({ editMode, toggleModal, onSubmit, methods, loading, succes
                                     type="date"
                                 />
 
-                                <TextInputs
-                                    required={false}
-                                    // validationError={"offerEndTime is Required"}
-                                    bgcolour={"#fff"}
-                                    name={"featured"}
-                                    label={"Featured :"}
-                                    placeholder={"false"}
-                                    className="w-full p-2 rounded-lg text-black"
-                                />
+                                {/* Boolean fields - Updated to use checkboxes */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="flex items-center gap-2 font-medium text-gray-800">
+                                        <input
+                                            type="checkbox"
+                                            {...register("featured")}
+                                            className="w-4 h-4"
+                                        />
+                                        Featured Product
+                                    </label>
+                                </div>
 
-                                <TextInputs
-                                    required={false}
-                                    // validationError={"offerEndTime is Required"}
-                                    bgcolour={"#fff"}
-                                    name={"topPick"}
-                                    label={"Top Pick:"}
-                                    placeholder={"false"}
-                                    className="w-full p-2 rounded-lg text-black"
-                                />
+                                <div className="flex flex-col gap-1">
+                                    <label className="flex items-center gap-2 font-medium text-gray-800">
+                                        <input
+                                            type="checkbox"
+                                            {...register("topPick")}
+                                            className="w-4 h-4"
+                                        />
+                                        Top Pick
+                                    </label>
+                                </div>
 
-                                <TextInputs
-                                    required={false}
-                                    // validationError={"offerEndTime is Required"}
-                                    bgcolour={"#fff"}
-                                    name={"isEnabled"}
-                                    label={"Enabled:"}
-                                    placeholder={"false"}
-                                    className="w-full p-2 rounded-lg text-black"
-                                />
+                                <div className="flex flex-col gap-1">
+                                    <label className="flex items-center gap-2 font-medium text-gray-800">
+                                        <input
+                                            type="checkbox"
+                                            {...register("isEnabled")}
+                                            className="w-4 h-4"
+                                        />
+                                        Enable Product
+                                    </label>
+                                </div>
 
                                 {fields.map((item, index) => (
                                     <div key={item.id} className="flex flex-col gap-2 border border-gray-300 p-2 rounded-lg mb-1">

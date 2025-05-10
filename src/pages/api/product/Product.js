@@ -62,7 +62,10 @@ const createProduct = nextConnect({
 });
 
 // Attach Multer Middleware
-createProduct.use(upload.single("image"));
+// createProduct.use(upload.single("image"));
+createProduct.use(upload.array("images", 5));
+// 'images' = name of field, 5 = max 5 files (you can change it)
+
 
 createProduct.post(async (req, res) => {
     await connectDB();
@@ -84,17 +87,28 @@ createProduct.post(async (req, res) => {
             category,
             selectionMode, // Manual or Auto
         } = req.body;
-
-        if (!req.file) {
-            return res.status(400).json({ error: "Blog should have an image" });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: "Product should have at least one image" });
         }
+        // Upload all images to Cloudinary
+        const imageUrls = [];
 
-        const imageUrl = await uploadImageToCloudinary(req.file.path);
-
-        if (!imageUrl) {
-            return res.status(500).json({ message: 'Error uploading image to Cloudinary' });
+        for (const file of req.files) {
+            const url = await uploadImageToCloudinary(file.path);
+            if (url) {
+                imageUrls.push(url);
+            }
         }
-        // Step 2: Check Selection Mode
+        // if (!req.file) {
+        //     return res.status(400).json({ error: "Blog should have an image" });
+        // }
+
+        // const imageUrl = await uploadImageToCloudinary(req.file.path);
+
+        // if (!imageUrl) {
+        //     return res.status(500).json({ message: 'Error uploading image to Cloudinary' });
+        // }
+        // // Step 2: Check Selection Mode
         if (selectionMode === "auto") {
             // Auto Mode: Automatically set featured and topPick
             const isFeatured = false; // Default, handled by autoAssignAdsAndTopPicks
@@ -103,7 +117,7 @@ createProduct.post(async (req, res) => {
             // Step 3: Create Product with default featured/topPick
             const newProduct = await Product.create({
                 name,
-                imageUrl,
+                imageUrls,
                 price,
                 discount,
                 stock,
@@ -131,7 +145,7 @@ createProduct.post(async (req, res) => {
             // Manual Mode: Use admin input directly
             const newProduct = await Product.create({
                 name,
-                imageUrl,
+                imageUrls,
                 price,
                 discount,
                 stock,

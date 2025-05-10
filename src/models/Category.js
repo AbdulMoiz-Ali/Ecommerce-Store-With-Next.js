@@ -15,12 +15,12 @@ const CategorySchema = new Schema(
         products: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Product", // Reference to Product model
+                ref: "Product", 
             },
         ],
     },
     {
-        timestamps: true, // Automatically adds createdAt and updatedAt
+        timestamps: true,
     }
 );
 const Category = mongoose.models.Category || mongoose.model('Category', CategorySchema);
